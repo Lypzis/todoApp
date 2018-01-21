@@ -8,6 +8,28 @@
     </head>
     <body>
         <h1>My Todos</h1>
+        <br>
+        
+        <ul>
+        </ul>
 
+        <script>
+            const electron = require('electron');
+            const { ipcRenderer } = electron;
+            const list = document.querySelector('ul'); //constant unordered list
+
+            ipcRenderer.on('addTodo', (event, todo) => {
+                const li = document.createElement('li'); //create list item tag
+                const text = document.createTextNode(todo); //receives the todo text
+
+                li.appendChild(text); //append text to li
+                list.appendChild(li); //looks for the ul tag and append li
+            });
+
+            ipcRenderer.on('clean', () =>{
+                list.innerHTML = '';
+            });
+
+        </script>
     </body>
 </html>

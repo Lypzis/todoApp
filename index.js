@@ -1,7 +1,7 @@
 const electron = require('electron');
 
-//Menu --> constructor for custom menus
-const { app, BrowserWindow, Menu } = electron;
+//'Menu' dependency --> constructor for custom menus
+const { app, BrowserWindow, Menu, ipcMain } = electron;
 
 let mainWindow;
 let addWindow;
@@ -11,7 +11,7 @@ app.on('ready', () => {
     mainWindow.loadURL(`file://${__dirname}/main.html`);
     mainWindow.on('close', () => { app.quit() }); //on close event, quit everything
 
-    const mainMenu = Menu.buildFromTemplate(menuTemplate);
+    const mainMenu = Menu.buildFromTemplate(menuTemplate); //const build of the main menu
     Menu.setApplicationMenu(mainMenu);
 });
 
@@ -23,7 +23,15 @@ function createAddWindow(){
         title: 'Add New Todo'
     });
     addWindow.loadURL(`file://${__dirname}/addTodo.html`);
+
+    addWindow.on('closed', () => addWindow = null); //clean up memory used after window is closed;
 }
+
+ipcMain.on('addTodo', (event, todo) => {
+    mainWindow.webContents.send('addTodo', todo);
+
+    addWindow.close();
+});
 
 //array of labels on main menu
 const menuTemplate = [
@@ -37,6 +45,13 @@ const menuTemplate = [
                 accelerator: process.platform === 'darwin' ? 'Command+N' : 'Ctrl+N',
                 click(){
                     createAddWindow();
+                }
+            },
+            {
+                label: 'Clear Todos',
+                accelerator: process.platform === 'darwin' ? 'Command+Alt+C' : 'Ctrl+Alt+C',
+                click(){
+                    mainWindow.webContents.send('clean');
                 }
             },
             {
@@ -73,6 +88,7 @@ if (process.env.NODE_ENV !== 'production'){
     menuTemplate.push({
         label: 'View',
         submenu: [
+            { role: 'reload' }, //shortcut to reload the code, there are a lot more roles
             {
                 label: 'Toggle Developer Tools',
                 accelerator: 'F12',
