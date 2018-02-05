@@ -24,6 +24,10 @@ function createAddWindow(){
     });
     addWindow.loadURL(`file://${__dirname}/addTodo.html`);
 
+    if (process.env.NODE_ENV === 'production'){
+        addWindow.setMenu(null);
+    }
+
     addWindow.on('closed', () => addWindow = null); //clean up memory used after window is closed;
 }
 
